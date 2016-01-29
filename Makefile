@@ -15,7 +15,7 @@ all: part1 part2 part3
 
 part1: bin bin/raytrace bin/raytrace_opt bin/raytrace_auto
 
-part2: bin bin/raytrace_omp
+part2: bin bin/edge_detection
 
 part3: bin bin/nqueens bin/nqueens_omp
 
@@ -34,9 +34,9 @@ bin/raytrace_auto: q1/raytrace_auto.c
 	@printf "Compiling Part 1 Automatic Parallelization\n"
 	$(SS_CC) $(SS_CFLAGS) $(SS_OPTFLAGS) $(SS_AUTOPARFLAGS) $< -o $@
 
-bin/raytrace_omp: q2/raytrace.c q2/3dsloader.c q2/colour.c q2/fileformat.c q2/noise.c q2/sphere.c q2/tokenizer.c q2/triangle.c q2/vectors.c
+bin/edge_detection: q2/canny_edge.c q2/canny_source.c q2/hysteresis.c q2/pgm_io.c 
 	@printf "Compiling Part 2 OpenMP\n"
-	$(SS_CC) $(SS_CFLAGS) $(SS_OPTFLAGS) $(SS_OMPFLAGS) -o $@ q2/raytrace.c q2/3dsloader.c q2/colour.c q2/fileformat.c q2/noise.c q2/sphere.c q2/tokenizer.c q2/triangle.c q2/vectors.c
+	$(SS_CC) $(SS_CFLAGS) $(SS_OPTFLAGS) $(SS_OMPFLAGS) -o $@ q2/canny_edge.c q2/canny_source.c q2/hysteresis.c q2/pgm_io.c 
 
 bin/nqueens: q3/nqueens.c
 	@printf "Compiling Part 3 Sequential\n"
