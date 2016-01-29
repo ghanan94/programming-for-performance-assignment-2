@@ -34,9 +34,9 @@ bin/raytrace_auto: q1/raytrace_auto.c
 	@printf "Compiling Part 1 Automatic Parallelization\n"
 	$(SS_CC) $(SS_CFLAGS) $(SS_OPTFLAGS) $(SS_AUTOPARFLAGS) $< -o $@
 
-bin/edge_detection: q2/canny_edge.c q2/canny_source.c q2/hysteresis.c q2/pgm_io.c 
+bin/edge_detection: q2/canny_edge.c q2/hysteresis.c q2/pgm_io.c 
 	@printf "Compiling Part 2 OpenMP\n"
-	$(SS_CC) $(SS_CFLAGS) $(SS_OPTFLAGS) $(SS_OMPFLAGS) -o $@ q2/canny_edge.c q2/canny_source.c q2/hysteresis.c q2/pgm_io.c 
+	$(SS_CC) $(SS_CFLAGS) $(SS_OPTFLAGS) $(SS_OMPFLAGS) -o $@ q2/canny_edge.c q2/hysteresis.c q2/pgm_io.c 
 
 bin/nqueens: q3/nqueens.c
 	@printf "Compiling Part 3 Sequential\n"
