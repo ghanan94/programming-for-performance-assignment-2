@@ -1,0 +1,5 @@
+bin/*
+*.log
+*.aux
+report.pdf
+image.ppm
