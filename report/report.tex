@@ -24,11 +24,11 @@
   \begin{tabular}{lr}
     & {\bf Time (s)} \\
     \hline
-    Run 1 & 0 \\
-    Run 2 & 0 \\
-    Run 3 & 0 \\
+    Run 1 & 6.382 \\
+    Run 2 & 6.330 \\
+    Run 3 & 6.087 \\
     \hline
-    Average & 0 \\
+    Average & 6.266 \\
   \end{tabular}
   \caption{Benchmark results for raytrace unoptimized sequential execution}
   \label{tbl-raytrace-unopt-sequential}
@@ -39,11 +39,11 @@
   \begin{tabular}{lr}
     & {\bf Time (s)} \\
     \hline
-    Run 1 & 0 \\
-    Run 2 & 0 \\
-    Run 3 & 0 \\
+    Run 1 & 3.001 \\
+    Run 2 & 3.201 \\
+    Run 3 & 2.905 \\
     \hline
-    Average & 0 \\
+    Average & 3.035 \\
   \end{tabular}
   \caption{Benchmark results for raytrace optimized sequential execution}
   \label{tbl-raytrace-opt-sequential}
@@ -54,19 +54,30 @@
   \begin{tabular}{lr}
     & {\bf Time (s)} \\
     \hline
-    Run 1 & 0 \\
-    Run 2 & 0 \\
-    Run 3 & 0 \\
+    Run 1 & 2.808 \\
+    Run 2 & 2.825 \\
+    Run 3 & 2.797 \\
     \hline
-    Average & 0 \\
+    Average & 2.810 \\
   \end{tabular}
   \caption{Benchmark results for raytrace with automatic parallelization}
   \label{tbl-raytrace-automatic}
 \end{table}
 
-%% Refer to {\bf Table~\ref{tbl-raytrace-unopt-sequential}}, {\bf
-%% Table~\ref{tbl-raytrace-opt-sequential}}, and {\bf
-%% Table~\ref{tbl-raytrace-automatic}} in your explanation.
+
+The speedup seen in {\bf Table~\ref{tbl-raytrace-unopt-sequential}} compared with {\bf Table~\ref{tbl-raytrace-opt-sequential}} is due to the fact that the compiler was instructed to tune the executable for maximum runtime performance, as per the docs found in {\tt https://docs.oracle.com/cd/E37069\_01/html/E37074/bjapp.html}. The speed up due to the compiler is approximately 2.065.
+
+To allow for the automatic parallelization of {\tt raytrace\_auto.c}, the {\tt vectorAdd}, {\tt vectorScale}, {\tt vectorSub}, and {\tt vectorDot} functions had to be implemented using macros. This is because producton compilers will usually avoid parallelizing loops with function calls as they can have arbitrary side effects. In this case, there isn't any side effect as it is a simple function that takes inputs, does some calculation, and gives a result, but the compiler does not look into the specifics of the function.
+
+The changes made are correct because they are functionally equivalent to the original implementation with dedicated functions. They only difference now is that a function call isn't required to do the calculation. However, although this change is functionally correct, it is bad for maintainability. Macros do not have type-safety. They also make the readability of the coder harder. Finally, they substitutions, which can cause undesired reults. For example: \\
+{\tt \#define max(a,b) ((a)>(b)?:(a):(b))} \\
+followed by \\
+{\tt std:max(a,b);} \\
+may result in \\
+{\tt std::((a)>(b)?:(a):(b));} \\
+by some compilers. \\
+
+The speed up sin in {\bf Table~\ref{tbl-raytrace-automatic}} compared with {\bf Table~\ref{tbl-raytrace-opt-sequential}} is approximately 1.080.
 
 \section*{Manual Parallelization with OpenMP (30 marks)}
 
