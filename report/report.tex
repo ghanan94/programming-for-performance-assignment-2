@@ -108,17 +108,17 @@ The speed up sin in {\bf Table~\ref{tbl-raytrace-automatic}} compared with {\bf 
   \begin{tabular}{lr}
     & {\bf Time (s)} \\
     \hline
-    Run 1 & 0 \\
-    Run 2 & 0 \\
-    Run 3 & 0 \\
-    Run 4 & 0 \\
-    Run 5 & 0 \\
-    Run 6 & 0 \\
+    Run 1 & 14.933 \\
+    Run 2 & 15.477 \\
+    Run 3 & 16.293 \\
+    Run 4 & 15.929 \\
+    Run 5 & 16.780 \\
+    Run 6 & 15.103 \\
     \hline
-    Average & 0 \\
+    Average & 15.753 \\
   \end{tabular}
-  \caption{Benchmark results for Fibonacci sequential execution ({\tt n} = \fibNumber{})}
-  \label{tbl-fib-sequential}
+  \caption{Benchmark results for N-Queens sequential execution ({\tt n} = 14)}
+  \label{tbl-nqueens-sequential}
 \end{table}
 
 \begin{table}[H]
@@ -126,20 +126,25 @@ The speed up sin in {\bf Table~\ref{tbl-raytrace-automatic}} compared with {\bf 
   \begin{tabular}{lr}
     & {\bf Time (s)} \\
     \hline
-    Run 1 & 0 \\
-    Run 2 & 0 \\
-    Run 3 & 0 \\
-    Run 4 & 0 \\
-    Run 5 & 0 \\
-    Run 6 & 0 \\
+    Run 1 & 8.473 \\
+    Run 2 & 9.632 \\
+    Run 3 & 8.629 \\
+    Run 4 & 8.203 \\
+    Run 5 & 8.155 \\
+    Run 6 & 8.935 \\
     \hline
-    Average & 0 \\
+    Average & 8.671 \\
   \end{tabular}
-  \caption{Benchmark results for Fibonacci execution with OpenMP tasks ({\tt n} = \fibNumber{})}
-  \label{tbl-fib-tasks}
+  \caption{Benchmark results for N-Queens execution with OpenMP tasks ({\tt n} = 14)}
+  \label{tbl-nqueens-tasks}
 \end{table}
 
-%% Refer to {\bf Table~\ref{tbl-fib-sequential}} and
-%% {\bf Table~\ref{tbl-fib-tasks}} in your explanation.
+As seen in {\bf Table~\ref{tbl-nqueens-sequential}}, an average execution time of 15.753s was observed for the sequential execution. From {bf Table~\ref{tbl-nqueens-tasks}}, an average execution time of 8.671s was observed for the execution with OpenMP taks. This results in a speedup of approximately 1.82x.
+
+The implementation using OpenMP improved performance because this implementation of the N-Queens problem has calculations that depend very little on eachother. Because of this, a thread can be spawned for each calculation. However, spawning OpenMP tasks has non-negligible overhead which adds up - as seen when the directive was applied without any cutoff.
+
+The cutoff applied to this implementation was 4. The cutoff means that only the first levels in the recursion tree will have tasks spawned, the rest of the functions called because of the recursion will be executed sequentially. This saves the overhead that will increase exponentially if there was no cutoff.
+
+There are \( n^n \) max function calls (it will be less because of the check with the {\tt safe} function to prune some branches, but for now assume upper bound. This means there could be up to \( n^n \) (worse than factorial) tasks generated without cutoff and up to \( n^{cutoff} \) (polynomial) tasks spawned with cutoff.
 
 \end{document}
