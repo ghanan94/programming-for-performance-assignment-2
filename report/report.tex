@@ -145,7 +145,6 @@ The implementation using OpenMP improved performance because this implementation
 
 The cutoff applied to this implementation was 4. The cutoff means that only the first levels in the recursion tree will have tasks spawned, the rest of the functions called because of the recursion will be executed sequentially. This saves the overhead that will increase exponentially if there was no cutoff.
 
-There are \[ n^n \] max function calls (it will be less because of the check with {\tt safe} function but for now assume upper bound. This means there could be up to \[ n^n \] (worse than factorial) tasks generated without cutoff and up to \[ n^cutoff \] (polynomial) tasks spawned with cutoff.
-
+There are \( n^n \) max function calls (it will be less because of the check with the {\tt safe} function to prune some branches, but for now assume upper bound. This means there could be up to \( n^n \) (worse than factorial) tasks generated without cutoff and up to \( n^{cutoff} \) (polynomial) tasks spawned with cutoff.
 
 \end{document}
