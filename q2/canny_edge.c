@@ -285,8 +285,11 @@ void radian_direction(short int *delta_x, short int *delta_y, int rows,
    }
    *dir_radians = dirim;
 
-   for(r=0,pos=0;r<rows;r++){
-      for(c=0;c<cols;c++,pos++){
+   #pragma omp parallel for private(c, r, dx, dy, pos)
+   for(r=0;r<rows;r++){
+     pos = r * cols;
+
+     for(c=0;c<cols;c++){
 	 dx = (double)delta_x[pos];
 	 dy = (double)delta_y[pos];
 
@@ -294,6 +297,8 @@ void radian_direction(short int *delta_x, short int *delta_y, int rows,
 	 if(ydirtag == -1) dy = -dy;
 
 	 dirim[pos] = (float)angle_radians(dx, dy);
+
+	 pos++;
       }
    }
 }
@@ -345,11 +350,15 @@ void magnitude_x_y(short int *delta_x, short int *delta_y, int rows, int cols,
       exit(1);
    }
 
-   for(r=0,pos=0;r<rows;r++){
-      for(c=0;c<cols;c++,pos++){
+   #pragma omp parallel for private(c, r, sq1, sq2, pos)
+   for(r=0;r<rows;r++){
+      pos = r * cols;
+
+      for(c=0;c<cols;c++){
 	 sq1 = (int)delta_x[pos] * (int)delta_x[pos];
 	 sq2 = (int)delta_y[pos] * (int)delta_y[pos];
 	 (*magnitude)[pos] = (short)(0.5 + sqrt((float)sq1 + (float)sq2));
+	 pos++;
       }
    }
 
@@ -389,6 +398,7 @@ void derrivative_x_y(short int *smoothedim, int rows, int cols,
    * losing pixels.
    ****************************************************************************/
    if(VERBOSE) printf("   Computing the X-direction derivative.\n");
+   #pragma omp parallel for private(r, pos, c)
    for(r=0;r<rows;r++){
       pos = r * cols;
       (*delta_x)[pos] = smoothedim[pos+1] - smoothedim[pos];
@@ -404,6 +414,7 @@ void derrivative_x_y(short int *smoothedim, int rows, int cols,
    * losing pixels.
    ****************************************************************************/
    if(VERBOSE) printf("   Computing the Y-direction derivative.\n");
+   #pragma omp parallel for private(c, pos, r)
    for(c=0;c<cols;c++){
       pos = c;
       (*delta_y)[pos] = smoothedim[pos+cols] - smoothedim[pos];
@@ -456,6 +467,7 @@ void gaussian_smooth(unsigned char *image, int rows, int cols, float sigma,
    * Blur in the x - direction.
    ****************************************************************************/
    if(VERBOSE) printf("   Bluring the image in the X-direction.\n");
+   #pragma omp parallel for private(c, r, cc, sum, dot)
    for(r=0;r<rows;r++){
       for(c=0;c<cols;c++){
 	 dot = 0.0;
@@ -474,6 +486,7 @@ void gaussian_smooth(unsigned char *image, int rows, int cols, float sigma,
    * Blur in the y - direction.
    ****************************************************************************/
    if(VERBOSE) printf("   Bluring the image in the Y-direction.\n");
+   #pragma omp parallel for private(c, r, rr, sum, dot)
    for(c=0;c<cols;c++){
       for(r=0;r<rows;r++){
 	 sum = 0.0;
@@ -512,6 +525,7 @@ void make_gaussian_kernel(float sigma, float **kernel, int *windowsize)
       exit(1);
    }
 
+   #pragma omp parallel for private(i, x, fx) reduction(+:sum)
    for(i=0;i<(*windowsize);i++){
       x = (float)(i - center);
       fx = pow(2.71828, -0.5*x*x/(sigma*sigma)) / (sigma * sqrt(6.2831853));
@@ -519,6 +533,7 @@ void make_gaussian_kernel(float sigma, float **kernel, int *windowsize)
       sum += fx;
    }
 
+   #pragma omp parallel for private(i)
    for(i=0;i<(*windowsize);i++) (*kernel)[i] /= sum;
 
    if(VERBOSE){

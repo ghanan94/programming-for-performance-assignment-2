@@ -64,38 +64,57 @@ void apply_hysteresis(short int *mag, unsigned char *nms, int rows, int cols,
    * follow_edges algorithm more efficient to not worry about tracking an
    * edge off the side of the image.
    ****************************************************************************/
-   for(r=0,pos=0;r<rows;r++){
-      for(c=0;c<cols;c++,pos++){
+   #pragma omp parallel for private(r, c, pos)
+   for(r=0;r<rows;r++){
+     pos = r * cols;
+
+     for(c=0;c<cols;c++){
 	 if(nms[pos] == POSSIBLE_EDGE) edge[pos] = POSSIBLE_EDGE;
 	 else edge[pos] = NOEDGE;
-      }
+
+	 pos++;
+     }
    }
 
-   for(r=0,pos=0;r<rows;r++,pos+=cols){
+   #pragma omp parallel for private(r, pos)
+   for(r=0;r<rows;r++){
+      pos = r * cols;
       edge[pos] = NOEDGE;
       edge[pos+cols-1] = NOEDGE;
    }
+
    pos = (rows-1) * cols;
-   for(c=0;c<cols;c++,pos++){
+
+   #pragma omp parallel for private(c)
+   for(c=0;c<cols;c++){
       edge[c] = NOEDGE;
-      edge[pos] = NOEDGE;
+      edge[pos + c] = NOEDGE;
    }
 
    /****************************************************************************
    * Compute the histogram of the magnitude image. Then use the histogram to
    * compute hysteresis thresholds.
    ****************************************************************************/
+   #pragma omp parallel for private(r)
    for(r=0;r<32768;r++) hist[r] = 0;
-   for(r=0,pos=0;r<rows;r++){
-      for(c=0;c<cols;c++,pos++){
+
+   #pragma omp parallel for private(r, pos)
+   for(r=0;r<rows;r++){
+      pos = r * cols;
+
+      for(c=0;c<cols;c++){
 	 if(edge[pos] == POSSIBLE_EDGE) hist[mag[pos]]++;
+
+	 pos++;
       }
    }
 
    /****************************************************************************
    * Compute the number of pixels that passed the nonmaximal suppression.
    ****************************************************************************/
-   for(r=1,numedges=0;r<32768;r++){
+   numedges = 0;
+
+   for(r=1;r<32768;r++){
       if(hist[r] != 0) maximum_mag = r;
       numedges += hist[r];
    }
@@ -132,20 +151,32 @@ void apply_hysteresis(short int *mag, unsigned char *nms, int rows, int cols,
    * This loop looks for pixels above the highthreshold to locate edges and
    * then calls follow_edges to continue the edge.
    ****************************************************************************/
-   for(r=0,pos=0;r<rows;r++){
-      for(c=0;c<cols;c++,pos++){
+   #pragma omp for private(r, c, pos)
+   for(r=0;r<rows;r++){
+      pos = r * cols;
+
+      for(c=0;c<cols;c++){
 	 if((edge[pos] == POSSIBLE_EDGE) && (mag[pos] >= highthreshold)){
 	    edge[pos] = EDGE;
 	    follow_edges((edge+pos), (mag+pos), lowthreshold, cols);
 	 }
+
+	 pos++;
       }
    }
 
    /****************************************************************************
    * Set all the remaining possible edges to non-edges.
    ****************************************************************************/
-   for(r=0,pos=0;r<rows;r++){
-      for(c=0;c<cols;c++,pos++) if(edge[pos] != EDGE) edge[pos] = NOEDGE;
+   #pragma omp for private(r, c, pos)
+   for(r=0;r<rows;r++){
+      pos = r * cols;
+
+      for(c=0;c<cols;c++){
+	  if(edge[pos] != EDGE) edge[pos] = NOEDGE;
+
+	  pos++;
+      }
    }
 }
 
@@ -184,7 +215,7 @@ void non_max_supp(short *mag, short *gradx, short *grady, int nrows, int ncols,
    /****************************************************************************
    * Suppress non-maximum points.
    ****************************************************************************/
-   for(rowcount=1,magrowptr=mag+ncols+1,gxrowptr=gradx+ncols+1,
+    for(rowcount=1,magrowptr=mag+ncols+1,gxrowptr=gradx+ncols+1,
       gyrowptr=grady+ncols+1,resultrowptr=result+ncols+1;
       rowcount<nrows-2;
       rowcount++,magrowptr+=ncols,gyrowptr+=ncols,gxrowptr+=ncols,
