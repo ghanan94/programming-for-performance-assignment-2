@@ -10,7 +10,7 @@
 * permission may be granted only by Mike Heath or Prof. Sudeep Sarkar of
 * University of South Florida (sarkar@csee.usf.edu). Acknowledgment as
 * appropriate is respectfully requested.
-* 
+*
 *  Heath, M., Sarkar, S., Sanocki, T., and Bowyer, K. Comparison of edge
 *    detectors: a methodology and initial study, Computer Vision and Image
 *    Understanding 69 (1), 38-54, January 1998.
@@ -33,7 +33,7 @@
 * The user must input three parameters. These are as follows:
 *
 *   sigma = The standard deviation of the gaussian smoothing filter.
-*   tlow  = Specifies the low value to use in hysteresis. This is a 
+*   tlow  = Specifies the low value to use in hysteresis. This is a
 *           fraction (0-1) of the computed high threshold edge strength value.
 *   thigh = Specifies the high value to use in hysteresis. This fraction (0-1)
 *           specifies the percentage point in a histogram of the gradient of
@@ -65,21 +65,24 @@ int write_pgm_image(char *outfilename, unsigned char *image, int rows,
     int cols, char *comment, int maxval);
 
 void canny(unsigned char *image, int rows, int cols, float sigma,
-         float tlow, float thigh, unsigned char **edge, char *fname);
+	 float tlow, float thigh, unsigned char **edge, char *fname);
 void gaussian_smooth(unsigned char *image, int rows, int cols, float sigma,
-        short int **smoothedim);
+	short int **smoothedim);
 void make_gaussian_kernel(float sigma, float **kernel, int *windowsize);
 void derrivative_x_y(short int *smoothedim, int rows, int cols,
-        short int **delta_x, short int **delta_y);
+	short int **delta_x, short int **delta_y);
 void magnitude_x_y(short int *delta_x, short int *delta_y, int rows, int cols,
-        short int **magnitude);
+	short int **magnitude);
 void apply_hysteresis(short int *mag, unsigned char *nms, int rows, int cols,
-        float tlow, float thigh, unsigned char *edge);
+	float tlow, float thigh, unsigned char *edge);
 void radian_direction(short int *delta_x, short int *delta_y, int rows,
     int cols, float **dir_radians, int xdirtag, int ydirtag);
 double angle_radians(double x, double y);
+void non_max_supp(short *mag, short *gradx, short *grady, int nrows, int ncols,
+    unsigned char *result);
 
-main(int argc, char *argv[])
+
+int main(int argc, char *argv[])
 {
    char *infilename = NULL;  /* Name of the input image */
    char *dirfilename = NULL; /* Name of the output gradient direction image */
@@ -91,10 +94,10 @@ main(int argc, char *argv[])
    float sigma,              /* Standard deviation of the gaussian kernel. */
 	 tlow,               /* Fraction of the high threshold in hysteresis. */
 	 thigh;              /* High hysteresis threshold control. The actual
-			        threshold is the (100 * thigh) percentage point
-			        in the histogram of the magnitude of the
-			        gradient image that passes non-maximal
-			        suppression. */
+				threshold is the (100 * thigh) percentage point
+				in the histogram of the magnitude of the
+				gradient image that passes non-maximal
+				suppression. */
 
    /****************************************************************************
    * Get the command line arguments.
@@ -164,14 +167,14 @@ main(int argc, char *argv[])
 * DATE: 2/15/96
 *******************************************************************************/
 void canny(unsigned char *image, int rows, int cols, float sigma,
-         float tlow, float thigh, unsigned char **edge, char *fname)
+	 float tlow, float thigh, unsigned char **edge, char *fname)
 {
    FILE *fpdir=NULL;          /* File to write the gradient image to.     */
    unsigned char *nms;        /* Points that are local maximal magnitude. */
    short int *smoothedim,     /* The image after gaussian smoothing.      */
-             *delta_x,        /* The first devivative image, x-direction. */
-             *delta_y,        /* The first derivative image, y-direction. */
-             *magnitude;      /* The magnitude of the gadient image.      */
+	     *delta_x,        /* The first devivative image, x-direction. */
+	     *delta_y,        /* The first derivative image, y-direction. */
+	     *magnitude;      /* The magnitude of the gadient image.      */
    int r, c, pos;
    float *dir_radians=NULL;   /* Gradient direction image.                */
 
@@ -204,8 +207,8 @@ void canny(unsigned char *image, int rows, int cols, float sigma,
       * Write the gradient direction image out to a file.
       *************************************************************************/
       if((fpdir = fopen(fname, "wb")) == NULL){
-         fprintf(stderr, "Error opening the file %s for writing.\n", fname);
-         exit(1);
+	 fprintf(stderr, "Error opening the file %s for writing.\n", fname);
+	 exit(1);
       }
       fwrite(dir_radians, sizeof(float), rows*cols, fpdir);
       fclose(fpdir);
@@ -284,13 +287,13 @@ void radian_direction(short int *delta_x, short int *delta_y, int rows,
 
    for(r=0,pos=0;r<rows;r++){
       for(c=0;c<cols;c++,pos++){
-         dx = (double)delta_x[pos];
-         dy = (double)delta_y[pos];
+	 dx = (double)delta_x[pos];
+	 dy = (double)delta_y[pos];
 
-         if(xdirtag == 1) dx = -dx;
-         if(ydirtag == -1) dy = -dy;
+	 if(xdirtag == 1) dx = -dx;
+	 if(ydirtag == -1) dy = -dy;
 
-         dirim[pos] = (float)angle_radians(dx, dy);
+	 dirim[pos] = (float)angle_radians(dx, dy);
       }
    }
 }
@@ -330,7 +333,7 @@ double angle_radians(double x, double y)
 * DATE: 2/15/96
 *******************************************************************************/
 void magnitude_x_y(short int *delta_x, short int *delta_y, int rows, int cols,
-        short int **magnitude)
+	short int **magnitude)
 {
    int r, c, pos, sq1, sq2;
 
@@ -344,9 +347,9 @@ void magnitude_x_y(short int *delta_x, short int *delta_y, int rows, int cols,
 
    for(r=0,pos=0;r<rows;r++){
       for(c=0;c<cols;c++,pos++){
-         sq1 = (int)delta_x[pos] * (int)delta_x[pos];
-         sq2 = (int)delta_y[pos] * (int)delta_y[pos];
-         (*magnitude)[pos] = (short)(0.5 + sqrt((float)sq1 + (float)sq2));
+	 sq1 = (int)delta_x[pos] * (int)delta_x[pos];
+	 sq2 = (int)delta_y[pos] * (int)delta_y[pos];
+	 (*magnitude)[pos] = (short)(0.5 + sqrt((float)sq1 + (float)sq2));
       }
    }
 
@@ -365,7 +368,7 @@ void magnitude_x_y(short int *delta_x, short int *delta_y, int rows, int cols,
 * DATE: 2/15/96
 *******************************************************************************/
 void derrivative_x_y(short int *smoothedim, int rows, int cols,
-        short int **delta_x, short int **delta_y)
+	short int **delta_x, short int **delta_y)
 {
    int r, c, pos;
 
@@ -391,7 +394,7 @@ void derrivative_x_y(short int *smoothedim, int rows, int cols,
       (*delta_x)[pos] = smoothedim[pos+1] - smoothedim[pos];
       pos++;
       for(c=1;c<(cols-1);c++,pos++){
-         (*delta_x)[pos] = smoothedim[pos+1] - smoothedim[pos-1];
+	 (*delta_x)[pos] = smoothedim[pos+1] - smoothedim[pos-1];
       }
       (*delta_x)[pos] = smoothedim[pos] - smoothedim[pos-1];
    }
@@ -406,7 +409,7 @@ void derrivative_x_y(short int *smoothedim, int rows, int cols,
       (*delta_y)[pos] = smoothedim[pos+cols] - smoothedim[pos];
       pos += cols;
       for(r=1;r<(rows-1);r++,pos+=cols){
-         (*delta_y)[pos] = smoothedim[pos+cols] - smoothedim[pos-cols];
+	 (*delta_y)[pos] = smoothedim[pos+cols] - smoothedim[pos-cols];
       }
       (*delta_y)[pos] = smoothedim[pos] - smoothedim[pos-cols];
    }
@@ -419,15 +422,15 @@ void derrivative_x_y(short int *smoothedim, int rows, int cols,
 * DATE: 2/15/96
 *******************************************************************************/
 void gaussian_smooth(unsigned char *image, int rows, int cols, float sigma,
-        short int **smoothedim)
+	short int **smoothedim)
 {
    int r, c, rr, cc,     /* Counter variables. */
       windowsize,        /* Dimension of the gaussian kernel. */
       center;            /* Half of the windowsize. */
    float *tempim,        /* Buffer for separable filter gaussian smoothing. */
-         *kernel,        /* A one dimensional gaussian kernel. */
-         dot,            /* Dot product summing variable. */
-         sum;            /* Sum of the kernel weights variable. */
+	 *kernel,        /* A one dimensional gaussian kernel. */
+	 dot,            /* Dot product summing variable. */
+	 sum;            /* Sum of the kernel weights variable. */
 
    /****************************************************************************
    * Create a 1-dimensional gaussian smoothing kernel.
@@ -444,7 +447,7 @@ void gaussian_smooth(unsigned char *image, int rows, int cols, float sigma,
       exit(1);
    }
    if(((*smoothedim) = (short int *) calloc(rows*cols,
-         sizeof(short int))) == NULL){
+	 sizeof(short int))) == NULL){
       fprintf(stderr, "Error allocating the smoothed image.\n");
       exit(1);
    }
@@ -455,15 +458,15 @@ void gaussian_smooth(unsigned char *image, int rows, int cols, float sigma,
    if(VERBOSE) printf("   Bluring the image in the X-direction.\n");
    for(r=0;r<rows;r++){
       for(c=0;c<cols;c++){
-         dot = 0.0;
-         sum = 0.0;
-         for(cc=(-center);cc<=center;cc++){
-            if(((c+cc) >= 0) && ((c+cc) < cols)){
-               dot += (float)image[r*cols+(c+cc)] * kernel[center+cc];
-               sum += kernel[center+cc];
-            }
-         }
-         tempim[r*cols+c] = dot/sum;
+	 dot = 0.0;
+	 sum = 0.0;
+	 for(cc=(-center);cc<=center;cc++){
+	    if(((c+cc) >= 0) && ((c+cc) < cols)){
+	       dot += (float)image[r*cols+(c+cc)] * kernel[center+cc];
+	       sum += kernel[center+cc];
+	    }
+	 }
+	 tempim[r*cols+c] = dot/sum;
       }
    }
 
@@ -473,15 +476,15 @@ void gaussian_smooth(unsigned char *image, int rows, int cols, float sigma,
    if(VERBOSE) printf("   Bluring the image in the Y-direction.\n");
    for(c=0;c<cols;c++){
       for(r=0;r<rows;r++){
-         sum = 0.0;
-         dot = 0.0;
-         for(rr=(-center);rr<=center;rr++){
-            if(((r+rr) >= 0) && ((r+rr) < rows)){
-               dot += tempim[(r+rr)*cols+c] * kernel[center+rr];
-               sum += kernel[center+rr];
-            }
-         }
-         (*smoothedim)[r*cols+c] = (short int)(dot*BOOSTBLURFACTOR/sum + 0.5);
+	 sum = 0.0;
+	 dot = 0.0;
+	 for(rr=(-center);rr<=center;rr++){
+	    if(((r+rr) >= 0) && ((r+rr) < rows)){
+	       dot += tempim[(r+rr)*cols+c] * kernel[center+rr];
+	       sum += kernel[center+rr];
+	    }
+	 }
+	 (*smoothedim)[r*cols+c] = (short int)(dot*BOOSTBLURFACTOR/sum + 0.5);
       }
    }
 
@@ -521,6 +524,6 @@ void make_gaussian_kernel(float sigma, float **kernel, int *windowsize)
    if(VERBOSE){
       printf("The filter coefficients are:\n");
       for(i=0;i<(*windowsize);i++)
-         printf("kernel[%d] = %f\n", i, (*kernel)[i]);
+	 printf("kernel[%d] = %f\n", i, (*kernel)[i]);
    }
 }
