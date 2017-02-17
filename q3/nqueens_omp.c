@@ -34,12 +34,33 @@ void nqueens(char *config, int n, int i)
 	count++;
     }
 
-    /* try each possible position for queen <i> */
-    for (j=0; j<n; j++)
+    if (i < TASK_IF_I_LESS_THAN_VAL)
     {
-	/* allocate a temporary array and copy the config into it */
-	#pragma omp task private(new_config) shared(config, n, i) firstprivate(j) if(i < TASK_IF_I_LESS_THAN_VAL)
+	/* try each possible position for queen <i> */
+	for (j=0; j<n; j++)
 	{
+	    /* allocate a temporary array and copy the config into it */
+	    #pragma omp task private(new_config) shared(config, n, i) firstprivate(j)
+	    {
+		new_config = malloc((i+1)*sizeof(char));
+		memcpy(new_config, config, i*sizeof(char));
+		if (safe(new_config, i, j))
+		{
+		    new_config[i] = j;
+		    nqueens(new_config, n, i+1);
+		}
+		free(new_config);
+	    }
+	}
+
+	#pragma omp taskwait
+    }
+    else
+    {
+       /* try each possible position for queen <i> */
+       for (j=0; j<n; j++)
+	{
+	/* allocate a temporary array and copy the config into it */
 	    new_config = malloc((i+1)*sizeof(char));
 	    memcpy(new_config, config, i*sizeof(char));
 	    if (safe(new_config, i, j))
@@ -50,10 +71,6 @@ void nqueens(char *config, int n, int i)
 	    free(new_config);
 	}
     }
-
-    // sync
-    #pragma omp taskwait
-    return;
 }
 
 int main(int argc, char *argv[])
