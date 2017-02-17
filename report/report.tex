@@ -86,20 +86,44 @@ The speed up sin in {\bf Table~\ref{tbl-raytrace-automatic}} compared with {\bf 
   \begin{tabular}{lr}
     & {\bf Time (s)} \\
     \hline
-    Run 1 & 0 \\
-    Run 2 & 0 \\
-    Run 3 & 0 \\
-    Run 4 & 0 \\
-    Run 5 & 0 \\
-    Run 6 & 0 \\
+    Run 1 & 1.165 \\
+    Run 2 & 1.179 \\
+    Run 3 & 1.172 \\
+    Run 4 & 1.150 \\
+    Run 5 & 1.185 \\
+    Run 6 & 1.008 \\
     \hline
-    Average & 0 \\
+    Average & 1.143 \\
   \end{tabular}
-  \caption{Benchmark results for zeta execution with manual OpenMP ({\tt i} = \zetaIterations{})}
-  \label{tbl-zeta-openmp}
+  \caption{Benchmark results for edge detector sequential execution}
+  \label{tbl-canny-edge-sequential}
 \end{table}
 
-%% Explain why things got better.
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lr}
+    & {\bf Time (s)} \\
+    \hline
+    Run 1 & 0.786 \\
+    Run 2 & 0.789 \\
+    Run 3 & 0.811 \\
+    Run 4 & 0.793 \\
+    Run 5 & 0.816 \\
+    Run 6 & 0.847 \\
+    \hline
+    Average & 0.807 \\
+  \end{tabular}
+  \caption{Benchmark results for edge detector execution with manual OpenMP}
+  \label{tbl-canny-edge-openmp}
+\end{table}
+
+The sequential execution of the edge detector was observed to be approximately 1.143s on average as per {\bf Table~\ref{tbl-canny-edge-sequential}}. The execution with manual OpenMP of the edge detector was observed to be approximately 0.807s on average as per {\bf Table~\ref{tbl-canny-edge-openmp}}. This means there was a speedup of approximately 1.42x.
+
+The speed up was made possible by parallelizing the various for-loops in the code that iterated over the rows and columns. There was approximately 4000 rows and 3000 columns being analyzed in each group of (nested) for loops, where some of the calculations involved the {\tt sqrt}, or {\tt pow} functions which take relatively longer than other calculations.
+
+The parallelized version is implemented to be race free, because the loops that were parallelized only wrote to various elements in the array. However, no two seperate iterations write to the same element in the arrays so there is no dependancies between writes and/or reads.
+
+The resulting file from the OpenMP implementation was compared with the sequential version and there was no difference. This test was done 10x. (This is not a conclusive test on its own because it could just be that the race condition didn't happen to occur in the 10 trials, but it is a good indication + the explaination above as to why there is no race conditions).
 
 \section*{Using OpenMP Tasks (30 marks)}
 
@@ -108,14 +132,14 @@ The speed up sin in {\bf Table~\ref{tbl-raytrace-automatic}} compared with {\bf 
   \begin{tabular}{lr}
     & {\bf Time (s)} \\
     \hline
-    Run 1 & 0 \\
-    Run 2 & 0 \\
-    Run 3 & 0 \\
-    Run 4 & 0 \\
-    Run 5 & 0 \\
-    Run 6 & 0 \\
+    Run 1 & 0.786 \\
+    Run 2 & 0.789 \\
+    Run 3 & 0.811 \\
+    Run 4 & 0.793 \\
+    Run 5 & 0.816 \\
+    Run 6 & 0.847 \\
     \hline
-    Average & 0 \\
+    Average & 0.807 \\
   \end{tabular}
   \caption{Benchmark results for Fibonacci sequential execution ({\tt n} = \fibNumber{})}
   \label{tbl-fib-sequential}
